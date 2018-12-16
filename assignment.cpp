@@ -17,7 +17,7 @@ void assignment::out(argClass args,string algo,string opath){
 
     for(int j=0;j<centroid_num;j++){
         output<<"cluster-"<<j<<" {size:"<<clusters[j].counter<< ",centroid: [ ";
-        for(int i=0; i<args.get_point_length();i++){
+        for(int i=0; i<clusters[j].centroid.size();i++){
             output<<clusters[j].centroid[i]<<" ";
         }
         output<<" \n \n ";
@@ -66,7 +66,7 @@ void assignment::m1(argClass args,  initialization init, assignment assign){
             done=true;
             for(int j=0;j<centroid_num;j++){
                 if(keep_nums[j]!=clusters[j].counter) {
-                    if(keep_nums[j]>clusters[j].counter+130 || keep_nums[j]<clusters[j].counter-130) {
+                    if(keep_nums[j]>clusters[j].counter+40 || keep_nums[j]<clusters[j].counter-40) {
                         done =false;
                         break;
                     }
@@ -117,7 +117,7 @@ void assignment::m2(argClass args,  initialization init, assignment assign){
             done=true;
             for(int j=0;j<centroid_num;j++){
                 if(keep_nums[j]!=clusters[j].counter) {
-                    if(keep_nums[j]>clusters[j].counter+130 || keep_nums[j]<clusters[j].counter-130) {
+                    if(keep_nums[j]>clusters[j].counter+20 || keep_nums[j]<clusters[j].counter-20) {
                         done =false;
                         break;
                     }
@@ -133,9 +133,10 @@ void assignment::m2(argClass args,  initialization init, assignment assign){
 
         count++;
         cout<<" update number "<< count<<endl;
-        if(done) {
+        if(done || count==15) {
             cout<<" clustering complete "<<endl;
             cout << silhouette() << " okk " << endl;
+            fflush(stdout);
             break;
         }
 
@@ -156,14 +157,16 @@ void assignment::m3(argClass args,  initialization init, assignment assign){
     clock_t begin = clock();
 
     while (done==false && count<15){
+
         if(count==0 )   i = cube(  args  ,init,assign, NULL) ;
         else         i = cube(  args  ,init,assign, i) ;
+
 
         if(count>0){
             done=true;
             for(int j=0;j<centroid_num;j++){
                 if(keep_nums[j]!=clusters[j].counter) {
-                    if(keep_nums[j]>clusters[j].counter+130 || keep_nums[j]<clusters[j].counter-130) {
+                    if(keep_nums[j]>clusters[j].counter+20 || keep_nums[j]<clusters[j].counter-20) {
                         done =false;
                         break;
                     }
@@ -347,7 +350,7 @@ void assignment::m7(argClass args,  initialization init, assignment assign){
             done=true;
             for(int j=0;j<centroid_num;j++){
                 if(keep_nums[j]!=clusters[j].counter) {
-                    if(keep_nums[j]>clusters[j].counter+130 || keep_nums[j]<clusters[j].counter-130) {
+                    if(keep_nums[j]>clusters[j].counter+20 || keep_nums[j]<clusters[j].counter-20) {
                         done =false;
                         break;
                     }
@@ -394,7 +397,7 @@ void assignment::m8(argClass args,  initialization init, assignment assign){
             done=true;
             for(int j=0;j<centroid_num;j++){
                 if(keep_nums[j]!=clusters[j].counter) {
-                    if(keep_nums[j]>clusters[j].counter+130 || keep_nums[j]<clusters[j].counter-130) {
+                    if(keep_nums[j]>clusters[j].counter+20 || keep_nums[j]<clusters[j].counter-20) {
                         done =false;
                         break;
                     }
@@ -440,7 +443,7 @@ void assignment::m9(argClass args,  initialization init, assignment assign){
             done=true;
             for(int j=0;j<centroid_num;j++){
                 if(keep_nums[j]!=clusters[j].counter) {
-                    if(keep_nums[j]>clusters[j].counter+130 || keep_nums[j]<clusters[j].counter-130) {
+                    if(keep_nums[j]>clusters[j].counter+20 || keep_nums[j]<clusters[j].counter-20) {
                         done =false;
                         break;
                     }
@@ -624,8 +627,11 @@ double assignment::silhouette(){
         if(clusters[i].counter>0) {
 
             double min_2centr = 9999;   //2nd closest centroid
+            double min=9999;
+            int closest2 = 0;//2nd closest centroid
+
             int closest = 0;
-            double dist;   //2nd closest centroid
+            double dist;   //distance for 2nd closest centroid
             p.set_coord(clusters[i].centroid);
 
             for (int h = 0; h < centroid_num; h++) {
@@ -636,8 +642,10 @@ double assignment::silhouette(){
                     if (metric == "euclidean") dist = eucl_dist(p, q);
                     else if (metric == "cosine") dist = cos_dist(p, q);
 
-                    if (dist< min_2centr) {
-                        min_2centr = dist;
+                    if (dist< min) {
+                        min_2centr = min;
+                        min = dist;
+                        closest2 = closest;
                         closest = h;
                     }
                 }
@@ -648,7 +656,8 @@ double assignment::silhouette(){
             double sum = 0.0;
             int div=1;
             for (int h = 0; h < clusters[i].counter; h++) {
-                div+=clusters[i].counter;
+            	//div+=clusters[i].counter+clusters[closest2].counter;
+            	div++;
                 p.set_coord(clusters[i].cluster_data[h]);
                 for (int j = 0; j < clusters[i].counter; j++) {
 
@@ -660,29 +669,31 @@ double assignment::silhouette(){
                     }
                 }
 
-                a = sum / clusters[i].counter;
+                if(clusters[i].counter!=0) a = sum / clusters[i].counter;
+                else a=sum;
                 sum = 0.0;
 
-                for (int j = 0; j < clusters[closest].counter; j++) {
-
+                for (int j = 0; j < clusters[closest2].counter; j++) {
                     if (h != j) {
+                		div++;
 
-                        q.set_coord(clusters[closest].cluster_data[j]);
+                        q.set_coord(clusters[closest2].cluster_data[j]);
                         if (metric == "euclidean") sum += eucl_dist(p, q);
                         else if (metric == "cosine") sum += cos_dist(p, q);
                     }
 
                 }
-                b = sum / clusters[closest].counter;
+                 if(clusters[closest2].counter!=0) b = sum / clusters[closest2].counter;
+                 else b=sum;
 
-                if (a< b) si = 1 - a / b;
-                else if ((a> b)) si = b / (a - 1);
+                if (a< b && b!=0) si = 1 - a / b;
+                else if ((a> b) && a!=1) si = b / (a - 1);
                 else si = 0.0;
                 silhouette_mean += si;
 
             }
             cout<< "calculating silhouette ..."<<endl;
-            silhouette_mean = silhouette_mean / div;
+            if(div!=0) silhouette_mean = silhouette_mean / div;
             clusters[i].si = silhouette_mean;
             keep_times++;
         }
@@ -717,6 +728,24 @@ assignment::assignment(int k, int num_of_points, string m,vector<double>* centro
 
 }
 
+void assignment::clean(int k, int num_of_points, string m,vector<double>* centroids) {
+
+    clusters = new cluster_struct[k];
+
+    for(int i=0; i<k;i++){
+
+        clusters[i].centroid = centroids[i];
+        clusters[i].cluster_data = new vector<double>[num_of_points+100];
+        clusters[i].counter=0;
+    }
+
+    done = false;
+    centroid_num = k;
+    num_points = num_of_points;
+    metric = m;
+
+}
+
 void assignment::cl_kmeans(argClass args,  initialization init, assignment assign) {
 
     int count=0;
@@ -724,8 +753,11 @@ void assignment::cl_kmeans(argClass args,  initialization init, assignment assig
     int keep_nums[centroid_num];
 
     while (done==false && count<15){
+    	cout<<"eleoccc"<<endl;
+    	fflush(stdout);
         if(count==0 )   i = LSH(  args  ,init,assign, NULL) ;
         else         i = LSH(  args  ,init,assign, i) ;
+    	cout<<"eleocccddddff"<<endl;
 
         if(count>0){
             done=true;
@@ -751,16 +783,12 @@ void assignment::cl_kmeans(argClass args,  initialization init, assignment assig
 
         count++;
         cout<<" update number "<< count<<endl;
-        if(done) {
-            cout<<" clustering complete "<<endl;
-            cout << silhouette() << " okk " << endl;
-            break;
-        }
+     
 
-        update_centers_kmeans();
-        //update_centers_kmedoids();
+        //update_centers_kmeans();
+        update_centers_kmedoids();
     }
-    out(args,"aaaa","yolo");
+    out(args,"I2A3Udcdfsd2","out14");
 
 }
 
@@ -771,14 +799,17 @@ void assignment::update_centers_kmeans(){
 
     for(int i=0; i<centroid_num; i++ ){
 
-        for(int h=0;h<clusters[i].cluster_data[1].size();h++){
+        for(int j=0; j<clusters[i].counter; j++) {
             double sum=0.0;
 
-            for(int j=0; j<clusters[i].counter; j++) {
+	        for(int h=0;h<clusters[i].cluster_data[j].size();h++){
 
-                sum += clusters[i].cluster_data[j][h];
-            }
-            clusters[i].centroid[h] = sum;
+
+	                sum += clusters[i].cluster_data[j][h];
+	        }
+
+            if( clusters[i].counter>0)  clusters[i].centroid[j] = sum / clusters[i].counter;
+            else clusters[i].centroid[j] = sum;
             clusters[i].counter=0;
         }
 
@@ -806,30 +837,37 @@ void assignment::update_centers_kmedoids() { //PAM
 
         }
 
+        int keep_last=0;
         for(int h=0;h<clusters[m].counter;h++){
 
 
 
             p.set_coord(clusters[m].cluster_data[h]);
-
+			objective_func=0.0;
             for(int j=0; j<clusters[m].counter; j++) {
-                if(h==j)continue;
                 q.set_coord(clusters[m].cluster_data[j]);
 
                 if (metric == "euclidean") sum += eucl_dist(p, q);
                 else if (metric == "cosine") sum += cos_dist(p, q);
+                if( sum>min ) break;
 
             }
             objective_func+=sum;
 
             if((objective_func<min)) {
+            	min = objective_func;
+            	keep_last=h;
                 cc++;
-                clusters[m].centroid = clusters[m].cluster_data[h];
-                clusters[m].counter=0;
                 done =false;
             }
 
        }
+
+       if(cc>0){
+       	    clusters[m].centroid=clusters[m].cluster_data[keep_last] ;
+       }
+
+       	clusters[m].counter=0;
 
     }
 
@@ -843,15 +881,16 @@ item* assignment::Loyds_assignment(vector<double>* points,item * old_clustering)
 
     double temp_dist = 0.0;
     item p,q;
-    int final_cluster=0;
     item* m_range = new item[num_points+100];
     int count_range=0;
+    int   final_cluster=0;
 
 
 
     for(int i=0; i<num_points; i++ ) {
         double min = 999999.0;
         p.set_coord(points[i]);
+        final_cluster=0;
 
         if(old_clustering!=NULL) {
 
@@ -871,7 +910,7 @@ item* assignment::Loyds_assignment(vector<double>* points,item * old_clustering)
             else if(metric == "cosine") temp_dist = cos_dist(p,q);
 
 
-            if(temp_dist<min){
+            if(temp_dist<min && temp_dist>0.0){
 
                 min=temp_dist;
                 final_cluster = j;
@@ -900,7 +939,7 @@ item* assignment::Loyds_assignment(vector<double>* points,item * old_clustering)
             for (int j=0; j<count_range;j++) {
 
 
-                if(m_range[j].is_equal(old_clustering[i]) && m_range[j].get_cluster_ball()!=old_clustering[i].get_cluster_ball()){
+                if( m_range[j].is_equal(old_clustering[i]) && m_range[j].get_cluster_ball()!=old_clustering[i].get_cluster_ball() ){
                     count_d++;
                     break;
 
@@ -1389,6 +1428,7 @@ item* assignment::LSH( argClass args,  initialization init, assignment assign, i
         delete myQuery[i];
     }
 */
+fflush(stdout);
     for (int i=0; i<count_range;i++){
         if(m_range[i].get_cluster_ball()<args.get_clusters()) {
             clusters[m_range[i].get_cluster_ball()].cluster_data[clusters[m_range[i].get_cluster_ball()].counter] = m_range[i].get_point();
@@ -1421,6 +1461,8 @@ item* assignment::LSH( argClass args,  initialization init, assignment assign, i
         }
 
     }
+
+
 
     return m_range;
 }

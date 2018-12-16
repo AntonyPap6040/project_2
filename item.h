@@ -11,7 +11,7 @@
 
 
 
-const int w=400; //window
+const int w=450; //window
 const double M1 = pow(2.0,32.0)-5;
 
 using namespace std;

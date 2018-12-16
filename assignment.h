@@ -36,6 +36,8 @@ public:
 
 
     assignment(int k, int num_of_points ,string m, vector<double>* centroids);
+    void clean(int k, int num_of_points, string m,vector<double>* centroids) ;
+
 
     void update_centers_kmeans();
     void update_centers_kmedoids();
@@ -55,6 +57,8 @@ public:
     void free_assign(){
         free(clusters);
     }
+
+
 private:
 
         double sil;

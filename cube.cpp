@@ -20,8 +20,8 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
     ifstream query_file; //query stream
     ofstream output; //output stream
 
-    int M=4; //max number of points to be checked
-    int probes=2; //max number of vertices to be checked
+    int M=150; //max number of points to be checked
+    int probes=1; //max number of vertices to be checked
 
     //get parameters
 
@@ -30,9 +30,9 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
     int L = args.get_L();
     int k = args.get_hash_func_num();
     int c=1;
-    double R=init.get_min(); //Radius given
+    double R=init.get_min()/2; //Radius given
 
-    double d2 =1;
+    double d2 =3;
 
 
 
@@ -43,7 +43,7 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
         myItems.push_back(p);
     }
 
-    vector<item*> myQuery; //vector storing all the items of the dataset (vectors
+    vector<item*> myQuery; //vector storing all the items of the dataset (vectors)
     for (int q = 0; q < args.get_num_items(); q++) {
         item* p = new item(q,k,L);
         p->set_coord(args.get_data()[q]);
@@ -52,7 +52,6 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
 
     item* m_range = new item[args.get_num_items()*L];
     int count_range=0;
-
 
     if(metric=="euclidean") {  //we are going to use the euclidean hypercube
 
@@ -277,7 +276,6 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
     }
 
 
-
     if(metric=="cosine") {  //we are going to use the cosine hypercube
         int y = 0;
 
@@ -304,8 +302,11 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
 
             y++;
         }
+
+
+
         //gia ola ta queries
-        myQuery[0]->TableSize=n / 2;
+        myQuery[0]->TableSize = n / 2;
         for (y = 1; y < myQuery.size(); y++) {
             myQuery[y]->set_r1(myQuery[y - 1]->getr());
             myQuery[y]->TableSize = n / 2;
@@ -329,8 +330,10 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
 
 
         //for range search
+
+
         bool assign_finished = false;
-        double num=R; //range/ball
+        double num=R/args.get_clusters(); //range/ball
 
         if(num>args.get_num_items()) {
             cout<<"error 1";
@@ -342,28 +345,51 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
             int keep_last = count_range;
 
             int points_assigned_per_iteration = 0;
+
             for (int q = 0; q < myQuery.size(); q++) {
-                clock_t begin = clock();
 
                 vector<double> FV;
-                calculate_f(FV, myQuery[q], d2);
+                calculate_c(FV, myQuery[q], d2);
                 int vertex = get_vertex(FV, d2);
                 int count_vertices = 0;
                 int points_checked = 0;
                 double dist = 99999;
+                int keep_vertices[probes];
+                int count_my_kept=0;
+                double dist1 = 0;
 
+                int min_dist_ham = 99999;
+
+                if(probes>1){
+                    for (int i = 0; i < myItems.size(); i++) {
+                        if (hyper_cos[i].has_points() > 0) {
+
+                            item v = hyper_cos[i].get_item()[0];
+                            dist1 = ham_dist(v.get_point(), myQuery[q]->get_point());
+
+                            if ((dist1 < min_dist_ham)) {
+                                min_dist_ham = dist1;
+                                keep_vertices[count_my_kept]=i;
+                                count_my_kept++;
+                                if(count_my_kept>=probes) count_my_kept=0;   //care
+                            }
+                        }
+                    }
+                }
+                
 
 
 
 
                 while (count_vertices < probes && points_checked < M) {
 
-                    double dist1 = 0;
+       
                     for (int i = 0; i < hyper_cos[vertex].get_f().size(); i++) {
 
                         item v = hyper_cos[vertex].get_item()[i];
+                 
                         dist1 = cos_dist(v, *myQuery[q]);
-
+                 
 
                         if (double_equals(R,0.0)==false) {
                             if ((dist1 <e * R)) {
@@ -388,25 +414,14 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
 
 
                         points_checked++;
-                        if (points_checked > M) {
+                        if (points_checked > M || count_vertices>=probes) {
                             break;
                         }
                     }
 
-                    int min_dist_ham = 99999;
 
-                    for (int i = 0; i < myItems.size(); i++) {
-                        if (hyper_cos[i].has_points() > 0) {
 
-                            item v = hyper_cos[i].get_item()[0];
-                            dist1 = ham_dist(v.get_point(), myQuery[q]->get_point());
-
-                            if ((dist1 < min_dist_ham)) {
-                                min_dist_ham = dist1;
-                                vertex = i;
-                            }
-                        }
-                    }
+                    vertex = keep_vertices[count_vertices];
                     count_vertices++;
 
 
@@ -427,10 +442,8 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
                                 pos = m_range[j].get_cluster_ball();
                             }
                         }
-                    }
-                    for (int j = i + 1; j < count_range; j++) {
-
-                        if (m_range[j].is_equal(m_range[i]) && m_range[j].is_changed()==false) {
+                   
+                        if (m_range[j].is_equal(m_range[i]) ) {
                             m_range[j].change();
                             m_range[i].change();
 
@@ -499,6 +512,7 @@ item* assignment::cube( argClass args,  initialization init, assignment assign,i
         delete myQuery[i];
     }
 */
+
     for (int i=0; i<count_range;i++){
         if(m_range[i].get_cluster_ball()<args.get_clusters()) {
             clusters[m_range[i].get_cluster_ball()].cluster_data[clusters[m_range[i].get_cluster_ball()].counter] = m_range[i].get_point();

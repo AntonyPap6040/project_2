@@ -38,32 +38,76 @@ int main(int argc, char* argv[]) {
     assignment assign(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
 
 
-     cout<<assign.get_clusters()[0].counter<<endl;
-     cout<<init.get_centroids()[0][0]<<endl;
+
 
     //2-1-1...
-    assign.m1(args,init,assign);
-    assign.m2(args,init,assign);
-    assign.m3(args,init,assign);
-    assign.m4(args,init,assign);
-    assign.m5(args,init,assign);
-    assign.m6(args,init,assign);
+  /*  assign.m1(args,init,assign);
+    cout<<"m1 ok"<<endl;
+    assign.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
+    fflush(stdout);*/
 
+    assign.m2(args,init,assign);
+    cout<<"m2 ok"<<endl;
+    assign.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
+    fflush(stdout);
+ 
+
+   /*    assign.m3(args,init,assign);
+    assign.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
+    cout<<"m3 ok"<<endl;
+    fflush(stdout);
+
+   /* assign.m4(args,init,assign);
+    cout<<"m4 ok"<<endl;
+    assign.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
+    fflush(stdout);
+
+    assign.m5(args,init,assign);
+    cout<<"m5 ok"<<endl;
+    assign.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
+    fflush(stdout);
+
+    assign.m6(args,init,assign);
+    cout<<"m6 ok"<<endl;
+    assign.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init.get_centroids());
+    fflush(stdout);*/
 
     //2.
-    initialization init1(args.get_metric(), args.get_num_items(),args.get_clusters());
+   /* initialization init1(args.get_metric(), args.get_num_items(),args.get_clusters());
     init1.k_means_pp(args.get_clusters(),args.get_point_length(),args.get_data());
     assignment assign1(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
 
-     cout<<assign1.get_clusters()[0].counter<<endl;
-     cout<<init1.get_centroids()[0][0]<<endl;
+
 
     assign1.m7(args,init1,assign1);
+    cout<<"m7 ok"<<endl;
+    assign1.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
+    fflush(stdout);   
     assign1.m8(args,init1,assign1);
+    cout<<"m8 ok"<<endl;
+    assign1.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
+    fflush(stdout); */
+
+/*
     assign1.m9(args,init1,assign1);
+    cout<<"m9 ok"<<endl;
+    assign1.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
+    fflush(stdout);
+
     assign1.m10(args,init1,assign1);
+    cout<<"m10 ok"<<endl;
+    assign1.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
+    fflush(stdout);
+
     assign1.m11(args,init1,assign1);
-    assign1.m12(args,init1,assign1);
+    cout<<"m11 ok"<<endl;
+    assign1.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
+    fflush(stdout);
+
+   assign1.m12(args,init1,assign1);
+    cout<<"m12 ok"<<endl;
+    assign1.clean(args.get_clusters(),args.get_num_items(),args.get_metric(),init1.get_centroids());
+    fflush(stdout);*/
 
 
     cout<<"the end"<<endl;
